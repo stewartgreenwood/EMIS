@@ -1,0 +1,31 @@
+WITH PostcodeTotalPatients
+AS (
+	SELECT postcode
+		,SUM(COUNT(*)) OVER (PARTITION BY postcode) AS total_patients
+	FROM patient
+	GROUP BY postcode
+	)
+	,PostcodeGenderCounts
+AS (
+	SELECT p.postcode
+		,p.gender
+		,COUNT(*) AS patient_count
+		,pt.total_patients
+		,ROW_NUMBER() OVER (
+			PARTITION BY p.postcode ORDER BY COUNT(*) DESC
+			) AS rnk
+	FROM patient p
+	JOIN PostcodeTotalPatients pt ON p.postcode = pt.postcode
+	GROUP BY p.postcode
+		,p.gender
+		,pt.total_patients
+	)
+SELECT pgc.postcode
+	,pgc.gender
+	,pgc.patient_count
+	,pgc.total_patients
+FROM PostcodeGenderCounts pgc
+WHERE pgc.rnk <= 2
+ORDER BY pgc.total_patients DESC
+	,pgc.postcode
+	,pgc.gender;
