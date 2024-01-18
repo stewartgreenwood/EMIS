@@ -1,0 +1,13 @@
+SELECT
+    LEFT(postcode, CHARINDEX(' ', postcode) - 1) AS postcode_area,
+    COUNT(patient_id) AS total_patients,
+    COUNT(CASE WHEN gender = 'Male' THEN 1 END) AS male_count,
+    COUNT(CASE WHEN gender = 'Female' THEN 1 END) AS female_count,
+    COUNT(CASE WHEN gender = 'Indeterminate' THEN 1 END) AS indeterminate_count,
+    COUNT(CASE WHEN gender = 'Unknown' THEN 1 END) AS unknown_count
+FROM
+    patient
+GROUP BY
+    LEFT(postcode, CHARINDEX(' ', postcode) - 1)
+ORDER BY
+    total_patients DESC, postcode_area;
